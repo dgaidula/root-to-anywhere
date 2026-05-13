@@ -93,6 +93,23 @@ Files are moved to Trash (not permanently deleted), giving you a 30-day recovery
 
 ---
 
+## Recommended File Formats for Drive Saves
+
+A secondary discovery: saving `.docx` files via the Drive connector causes errors and slowdowns because Word documents must be base64 encoded, and the connector is unreliable with large strings — they can get truncated mid-write. 
+
+Use these formats instead:
+
+| Format | MIME Type | Use For |
+|---|---|---|
+| Google Doc | `application/vnd.google-apps.document` | Long-form documents — resumes, cover letters, research notes, playbooks |
+| `.md` | `text/plain` | Discussion documents, synthesis notes, anything viewed in a Markdown reader. Mac recommendation: [MacDown](https://macdown.uranusjr.com) — free, beautiful, perfect for this use case |
+| `.txt` | `text/plain` | Simple cut/paste items — statements, short copy, reference snippets. Mac recommendation: [BBEdit](https://www.barebones.com/products/bbedit/) — the gold standard plain text editor, free to use |
+| `.docx` | via `present_files` + manual upload | Final documents only, handled outside the connector |
+
+The key insight: **Google Docs are a first-class Drive format** and write cleanly via the API. Reserve `.docx` for final delivery only, generated locally by Claude and downloaded via `present_files`, then manually uploaded to Drive.
+
+---
+
 ## Why This Works
 
 Google's Drive API enforces different rules at the root level vs. child folders for third-party app access. Root writes are permitted; subfolder writes are blocked. The `copy_file` operation bypasses this restriction because it's treated as a copy action rather than a new file creation — and it carries the appropriate permissions from the source file.
@@ -114,19 +131,28 @@ Rename directly in Drive and it syncs automatically.
 
 ---
 
-## Add to Claude's Global Memory
+## Teaching Claude the Workflow
 
-Once the workflow is set up, tell Claude to remember it so every future conversation follows the same pattern automatically — no need to re-explain it each time:
+For Claude to follow this workflow automatically, you need to add it in **two places** — memory alone isn't enough, especially inside Projects.
 
-> "When writing files to Google Drive, always use the two-step workflow: write the file to root prefixed with 'z_claude_trash_', then copy it to the target folder with the clean filename. Direct subfolder writes are blocked; root-then-copy is the only working method."
+### 1. Global Custom Instructions
+Go to **Settings → General → Custom Instructions** and add:
 
-Simply tell Claude in any conversation and it will update automatically. To verify it was saved, start a new conversation and ask:
+> "When writing files to Google Drive, always use the two-step workflow: (1) write the file to root prefixed with 'z_claude_trash_', (2) copy it to the target folder with the clean filename. Direct subfolder writes are blocked; root-then-copy is the only working method."
+
+This covers all regular conversations outside of Projects.
+
+### 2. Project Instructions
+If you use Claude Projects, paste the same instruction into each project's **Project Instructions** field. Project instructions take precedence over global settings, so Claude inside a project won't see your global custom instructions unless you add it there too.
+
+### 3. Global Memory (optional but useful)
+You can also tell Claude directly in any conversation and ask it to remember it. To verify it was saved, start a new conversation and ask:
 
 > "What do you remember about writing files to Google Drive?"
 
 Claude should recite the workflow back to you.
 
-**Note:** Claude has two memory systems — **chat memory** (auto-generated from your conversations, visible under Capabilities → Memory) and **memory edits** (explicit instructions added during a conversation, stored separately and not currently visible in the UI). Both carry forward into future conversations. The workflow instruction above is stored as a memory edit.
+**Note:** Claude has two memory systems — **chat memory** (auto-generated from your conversations, visible under **Capabilities → Memory**) and **memory edits** (explicit instructions added during a conversation, stored separately and not currently visible in the UI). Both carry forward into future conversations, but Custom Instructions and Project Instructions are the most reliable way to ensure consistent behavior.
 
 ---
 
