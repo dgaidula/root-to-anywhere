@@ -4,6 +4,10 @@
 
 ---
 
+> **Update:** This workaround addresses a limitation in Claude's *built-in* Google Drive connector specifically — it can't write new files directly into subfolders. If you have [`gog`](https://gogcli.sh) installed, [`google-workspace-mcp`](https://github.com/dgaidula/google-workspace-mcp) bridges gog's CLI into MCP and writes directly to any subfolder via `drive_file_create`, no `z_claude_trash_` prefix or nightly cleanup script required. This repo remains the right fix if you're using the built-in connector without `gog` installed.
+
+---
+
 ## What Works and What Doesn't
 
 | Capability | Status |
